@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<settings xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd" xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <localRepository>D:/Program-Dev/m2/repository_nexus_local</localRepository>
+
+    <servers>
+        <server>
+            <id>releases</id>
+            <username>liangkang</username>
+            <password>liangkang123</password>
+        </server>
+        <server>
+            <id>snapshots</id>
+            <username>liangkang</username>
+            <password>liangkang123</password>
+        </server>
+        <server>
+            <id>thirdparty</id>
+            <username>liangkang</username>
+          <password>liangkang123</password>
+        </server>
+        <server>
+            <id>TomcatServer</id>
+            <username>admin</username>
+            <password>admin</password>
+        </server>
+    </servers>
+
+    <mirrors>
+        <!-- <mirror>
+            <mirrorOf>!releases,!snapshots,!thirdparty,central</mirrorOf>
+            <id>aliyun-center</id>
+            <name>aliyun-center</name>
+            <url>https://maven.aliyun.com/repository/central</url>
+        </mirror> -->
+        <!-- 连接Maven私服，这一部分的配置必须存在 -->
+        <!-- <mirror>
+            <mirrorOf>!central,*</mirrorOf>
+            <id>public</id>
+            <name>public</name>
+            <url>http://svn.dameng.com:8082/nexus/content/groups/public/</url>
+        </mirror> -->
+    </mirrors>
+
+    <proxies>
+        <proxy>
+        <id>Clash</id>
+        <active>true</active>
+        <protocol>http</protocol>
+        <host>127.0.0.1</host>
+        <port>1080</port>
+        <username></username>
+        <password></password>
+        <nonProxyHosts>svn.dameng.com</nonProxyHosts>
+        </proxy>
+    </proxies>
+
+    <profiles>
+        <profile>
+            <id>nexus</id>
+            <repositories>
+                <repository>
+                    <id>releases</id>
+                    <name>releases</name>
+                    <url>http://svn.dameng.com:8082/nexus/content/repositories/releases</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+                <repository>
+                    <id>snapshots</id>
+                    <name>snapshots</name>
+                    <url>http://svn.dameng.com:8082/nexus/content/repositories/snapshots</url>
+                    <releases>
+                        <enabled>false</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
+                <repository>
+                    <id>thirdparty</id>
+                    <name>thirdparty</name>
+                    <url>http://svn.dameng.com:8082/nexus/content/repositories/thirdparty</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>releases</id>
+                    <name>releases</name>
+                    <url>http://svn.dameng.com:8082/nexus/content/repositories/releases</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </pluginRepository>
+                <pluginRepository>
+                    <id>snapshots</id>
+                    <name>snapshots</name>
+                    <url>http://svn.dameng.com:8082/nexus/content/repositories/snapshots</url>
+                    <releases>
+                        <enabled>false</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </pluginRepository>
+                <pluginRepository>
+                    <id>thirdparty</id>
+                    <name>thirdparty</name>
+                    <url>http://svn.dameng.com:8082/nexus/content/repositories/thirdparty</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </pluginRepository>
+            </pluginRepositories>
+            <properties>
+                <maven.compiler.source>1.8</maven.compiler.source>
+                <maven.compiler.target>1.8</maven.compiler.target>
+                <maven.compiler.compilerVersion>1.8</maven.compiler.compilerVersion>
+            </properties>
+        </profile>
+        <profile>
+			<id>aliyun</id> 
+			<repositories>
+				<repository>
+					<id>aliyun</id> 
+					<url>https://maven.aliyun.com/repository/public</url> 
+					<releases>
+						<enabled>true</enabled>
+					</releases> 
+					<snapshots>
+						<enabled>true</enabled> 
+						<updatePolicy>always</updatePolicy>
+					</snapshots>
+				</repository>
+			</repositories>
+		</profile>
+    </profiles>
+
+    <activeProfiles>
+        <!-- <activeProfile>nexus</activeProfile> -->
+    </activeProfiles>
+
+</settings>
