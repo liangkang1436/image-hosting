@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <#include "/common/element.ftl"/>
+    <script src="static/lib/jquery-1.12.4/jquery${min}.js"></script>
+    <link rel="stylesheet" href="static/common/css/icon-picker${min}.css"/>
+
+    <link href="static/dataview/css/dataview${min}.css" type="text/css" rel="stylesheet">
+    <link href="static/lib/jquery-ui-1.12.1/jquery-ui${min}.css" type="text/css" rel="stylesheet">
+    <script src="static/lib/jquery-ui-1.12.1/jquery-ui${min}.js"></script>
+    <link href="static/lib/jquery.layout-1.4.4/layout-default.css" type="text/css" rel="stylesheet">
+    <script src="static/lib/jquery.layout-1.4.4/jquery.layout${min}.js"></script>
+    <script src="static/common/js/icon-picker${min}.js"></script>
+    <style type="text/css">
+        .el-link i {
+            font-size: 18px;
+        }
+
+        .clearfix:before,
+        .clearfix:after {
+            display: table;
+            content: "";
+        }
+
+        .clearfix:after {
+            clear: both
+        }
+
+        .box-card {
+            width: 100%;
+            height: 100%;
+        }
+
+        .left-content {
+            padding: 20px;
+            height: calc(100% - 40px);
+        }
+
+        .el-main {
+            margin-left: -20px;
+            overflow: hidden;
+        }
+
+        .el-transfer-panel {
+            height: 600px;
+            width: 500px;
+        }
+
+        .el-transfer-panel__body {
+            height: 500px;
+        }
+
+        .el-transfer-panel__body .el-checkbox-group {
+            height: 100%;
+        }
+
+
+        /********	左侧树 elementui滚动条样式   *********/
+        .left-content .el-scrollbar {
+            height: calc(100% - 40px);
+        }
+
+        .el-main .el-scrollbar {
+            height: calc(100% - 10px);
+        }
+
+        .left-content .el-scrollbar__wrap {
+            overflow-x: hidden;
+        }
+
+        .left-content .el-card__body {
+            height: calc(100% - 40px);
+        }
+
+        .hover {
+            display: none;
+        }
+
+        .el-tree-node__content:hover > .custom-tree-node > .hover {
+            display: inline-block;
+        }
+
+        .el-card__header {
+            line-height: 35px;
+            height: 55px;
+            padding: 10px 20px;
+        }
+
+        .el-card__body {
+            height: calc(100% - 80px);
+        }
+
+        .ibox-content {
+            background: #fff;
+        }
+
+        .ui-layout-pane {
+            background: #e4e7ed !important;
+            border: 1px solid #e4e7ed !important;
+        }
+
+        .ibox {
+            clear: both;
+            margin-bottom: 0px;
+            margin-top: 0;
+            padding: 0;
+            background: #e4e7ed !important;
+        }
+
+        .ui-layout-resizer {
+            background: #e4e7ed !important;
+            border: none !important;
+        }
+
+        .cilckDiv {
+            color: red;
+            font-weight: bold;
+        }
+
+        .el-collapse-item__content {
+            padding-top: 13px !important;
+        }
+
+        .gray-bg {
+            background-color: #FFF;
+        }
+
+        .ibox-title {
+            min-height: 25px;
+            padding: 5px 10px 5px 10px;
+            line-height: 30px;
+        }
+
+        .buttonStyle {
+            height: 35px;
+            line-height: 7px;
+            background-color: #2781de;
+            color: #fff;
+            border-color: #2781de;
+            float: right;
+            margin-top: -3px;
+        }
+
+        .custom-tree-node {
+            text-overflow: ellipsis;
+            width: calc(100% - 460px);
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+<div id="app" v-cloak class="main">
+    <el-container class="container" id="container">
+        <div id="west" class="ui-layout-west no-scroll">
+            <div class="ibox no-margins">
+                <div class="ibox-title gray-bg">
+                    <h5 class="inline">部门</h5>
+                </div>
+            </div>
+            <div class="ibox-content no-padding" :style="{height: (winHeight-40)+'px'}">
+                <el-scrollbar class="hide-el-scroll" style="height:100%;">
+                    <el-tree v-if="deptTreeData" ref="deptTree" :data="deptTreeData" :props="deptTreeProps"
+                             node-key="deptId"
+                             show-checkbox
+                             check-strictly
+                             :expand-on-click-node="false"
+                             :check-on-click-node="true"
+                             :default-expanded-keys="defaultExpandDeptId"
+                             :highlight-current="true"
+                             :current-node-key="queryParam.deptId"
+                             @check-change="singleCheckChange">
+
+                    </el-tree>
+                </el-scrollbar>
+            </div>
+        </div>
+        <div id="center" class="pane ui-layout-center no-scroll">
+            <div class="ibox no-margins">
+                <div class="ibox-title gray-bg">
+                    <h5 class="inline">数据集</h5>
+                    <el-button class="buttonStyle" style="margin-left:1%;" type="primary" @click="submit">保存
+                    </el-button>
+                    <el-button class="buttonStyle" type="primary" @click="permissionDownShare">权限下发</el-button>
+                </div>
+                <div class="ibox-content no-padding" :style="{height: (winHeight-40)+'px'}">
+                    <el-scrollbar class="hide-el-scroll" style="height:100%;">
+                        <el-input size="small" placeholder="输入关键字进行过滤" v-model="filterDataSetText">
+                        </el-input>
+                        <el-tree v-if="dataSetTreeData" ref="dataSetTree" :data="dataSetTreeData"
+                                 :props="dataSetTreeProps"
+                                 node-key="nodeId"
+                                 show-checkbox
+                                 :expand-on-click-node="false"
+                                 :check-on-click-node="true"
+                                 :highlight-current="true"
+                                 default-expand-all
+                                 :filter-node-method="filterDataSet">
+                            <span class="custom-tree-node" slot-scope="{ node, data }">
+								{{ showNodeName(data)}}
+							</span>
+                        </el-tree>
+                    </el-scrollbar>
+                </div>
+            </div>
+        </div>
+    </el-container>
+
+</div>
+
+<script>
+    // 用于表单重置
+    var oldData = null;
+    var appData = {
+        winHeight: document.body.clientHeight
+        , winWidth: document.body.clientWidth
+        , pid: "0"
+        , dataSetTreeData: null
+        , filterDataSetText: ""
+        , deptTreeData: null
+        , defaultExpandDeptId: [0]
+        , deptDic: null
+        , deptTreeProps: {
+            label: "deptName"
+            // , disabled: "disableChecked"
+        }
+        , dataSetTreeProps: {
+            label: "nodeCaption"
+        }
+        , queryParam: {
+            deptId: ""
+        }
+        , defaultExpandeds: []
+        //缓存部门数据集权限
+        , cacheDeptDataPermission: {}
+        // 验证工具，简化一些常用验证的写法
+        , validator: validator()
+        // 字典
+        , Status: getDict("Status")
+        , Bool: getDict("Bool")
+        , PermissionType: getDict("PermissionType")
+        , menuTreeKey: 1
+    };
+
+    // Vue实例
+    var app = new Vue({
+        el: '#app'
+        , data: appData
+        , watch: {
+            'filterDataSetText': function (newVal, oldVal) {
+                this.$refs['dataSetTree'].filter(newVal);
+            }
+        }
+        , methods: {
+            //选中部门树
+            singleCheckChange: function (data, checked, node) {
+                var that = this;
+                if (checked) {
+                    //单选
+                    that.$nextTick(() => {
+                        that.$refs['deptTree'].setCheckedKeys([data.deptId]);
+                    });
+                    this.queryParam.deptId = data.deptId;
+                    this.checkDataSetTree(data.deptId);
+                }
+
+            }
+            , filterDataSet: function (value, data) {
+                if (!value) return true;
+                return data.nodeCaption.indexOf(value) !== -1;
+            }
+            , submit: function () {
+                var that = this;
+                var deptIds = this.$refs['deptTree'].getCheckedKeys();
+                if (deptIds == null || deptIds.length == 0) {
+                    app.$message({message: '请选择部门', type: 'error', showClose: true});
+                    return;
+                }
+                var deptId = deptIds[0];
+                var dataSetObjs = this.$refs['dataSetTree'].getCheckedNodes();
+                var dataSetIds = [];
+                for (var obj of dataSetObjs) {
+                    if (obj.nodeType == 1) {
+                        dataSetIds.push(obj.nodeId);
+                    }
+                }
+                axios.post("dataaggregation/dataaggregationDatasetChmod/saveDeptPermission",
+                    {
+                        deptId: deptId,
+                        dataSetIds: dataSetIds
+                    },
+                    {loading: true})
+                    .then(function (result) {
+                        app.$message({message: '保存成功', type: 'success', showClose: true});
+                        app.reset();
+                        app.reloadDeptTree(deptId);
+                    });
+            }
+            // TODO 权限下发
+            , permissionDownShare: function () {
+            }
+            , reset: function () {
+                var deptIds = this.$refs['deptTree'].getCheckedKeys();
+                if (!(deptIds == null || deptIds.length == 0)) {
+                    this.checkDataSetTree(deptIds[0]);
+                } else {
+                    this.$refs['dataSetTree'].setCheckedKeys([]);
+                }
+            }
+            , checkDataSetTree: function (deptId) {
+                var that = this;
+                that.$refs["dataSetTree"].setCheckedKeys([]);
+                if (deptId) {
+                    var dataSetIds = this.cacheDeptDataPermission[deptId];
+                    if (dataSetIds && that.$refs["dataSetTree"]) {
+                        clearDic(dataSetIds);
+                        that.$refs["dataSetTree"].setCheckedKeys(dataSetIds);
+                    }
+
+                }
+            }
+            , loadCache: function (callback) {
+                var that = this;
+                axios.get("dataaggregation/dataaggregationDatasetChmod/deptDataPermissions", {loading: true})
+                    .then(function (result) {
+                        that.cacheDeptDataPermission = result.data;
+                        callback && callback();
+                    });
+            }
+            , reloadDeptTree: function (deptId) {
+                this.$refs['deptTree'].setCheckedKeys([deptId]);
+                //缓存关联数据
+                this.loadCache(() => {
+                    this.checkDataSetTree(deptId);
+                });
+
+            }
+            , showNodeName(obj){
+                var version = "";
+                if (obj.majorVersion) {
+                    version += "V" + obj.majorVersion;
+                }
+                if (obj.minorVersion) {
+                    version += "." + obj.minorVersion;
+                }
+                if (version) {
+                    version = " (" + version + ")";
+                }
+                return obj.nodeCaption +version;
+            }
+
+        }
+        , created: function () {
+            var that = this;
+            axios.get("system/dept/tree", {loading: true})
+                .then(function (result) {
+                    // var root = [{deptId: "0", deptName: "所有部门", children: result.data || []}];
+                    // root[0].children.push({deptId: "1", deptName: "未分配", pid: "0", parentId: "0", children: []});
+                    that.deptTreeData = result.data || [];
+                    that.defaultExpandDeptId.push(result.data[0].deptId);
+                });
+
+            axios.get("dataaggregation/dataaggregationDatasetChmod/dataSetTree", {loading: true})
+                .then(function (result) {
+                    var root = [{
+                        children: []
+                        , nodeId: "0"
+                        , nodeName: "allTable"
+                        , nodeCaption: "所有数据集"
+                        , nodePid: -1
+                        , nodeType: -1
+                    }]
+                    root[0].children = result.data;
+                    that.dataSetTreeData = root;
+                });
+
+            this.loadCache();
+        }
+        , mounted: function () {
+            this.$nextTick(function () {
+                // 操作dom
+                // 布局
+                layout = $('#container').layout({
+                    scrollToBookmarkOnLoad: false,
+                    west__size: $(window).width() / 2,
+                    center__size: $(window).width() / 2,
+                    east__size: 0,
+                    onresize: function () {
+                    }
+                });
+            });
+            // 监听窗口变化
+            window.onresize = function () {
+                app.winHeight = document.body.clientHeight;
+            }
+        }
+    });
+
+    // 刷新
+    function reload() {
+    }
+
+    function dicFind(data, m, perData) {
+        if (data) {
+            data.forEach(n => {
+                if (n.id == m && !!n.children) {
+                    perData.forEach((item, index, arr) => {
+                        if (item === m) {
+                            perData.splice(index, 1)
+                        }
+                    });
+                } else {
+                    dicFind(n.children, m, perData);
+                }
+            });
+        }
+    }
+
+    function clearDic(perData) {
+        //var newData = clone(perData);
+        if (perData) {
+            perData.forEach(m => {
+                dicFind(appData.dataSetTreeData, m, perData);
+            });
+        }
+    }
+
+</script>
+</body>
+</html>
