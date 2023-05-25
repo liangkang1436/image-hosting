@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+<#include "/common/element.ftl"/>
+<style type="text/css">
+</style>
+</head>
+
+<body>
+	<div id="app" v-cloak class="main">
+		<el-container class="container">
+			<el-main>
+				<el-input placeholder="输入关键字进行过滤" v-model="filterDeptText" style=" margin-bottom: 5px;"></el-input>
+				<el-scrollbar class="hide-el-scroll" style="height:85%;">
+					<el-tree v-if="deptTreeData" ref="deptTree" :data="deptTreeData" :props="deptTreeProps"
+                             node-key="deptId"
+                             show-checkbox
+                             check-strictly
+                             :expand-on-click-node="false"
+                             :check-on-click-node="true"
+                             :default-expanded-keys="defaultExpandDeptId"
+                             :default-checked-keys="defaultCheckedDeptId"
+                             :highlight-current="true"
+                             @check-change="singleCheckChange"
+							 :filter-node-method="filterDept">
+							<span slot-scope="{ node, data }">
+								{{node.label}}
+								<template v-if="hasNote(data.deptId)">
+									<span style=" position: absolute; right: 50px; color: #a6a9ad; font-size: 12px;">
+										{{showNote(data.deptId)}}
+									</span>
+								</template>
+								<template v-if="node.disabled">
+									<span style=" position: absolute; right: 10px; color: #a6a9ad; font-size: 12px;">
+										部门暂时无法选择
+									</span>
+								</template>
+							</span>
+                    </el-tree>
+                </el-scrollbar>
+			</el-main>
+			<el-footer class="form-footer right">
+				<el-button @click="reset">重置</el-button>
+				<el-button type="primary" @click="submit">提交</el-button>
+			</el-footer>
+		</el-container>
+	</div>
+
+	<script>
+		var appData = {
+			winHeight: document.body.clientHeight
+			, filterDeptText: ""
+			, deptTreeData: null
+			, defaultExpandDeptId: [0]
+			, defaultCheckedDeptId: []
+			, selectedDeptId: ""
+			, selectedDeptName: ""
+			,availableDepts:[]
+			// []
+			,excludeDeptIds:parent.appData.excludeDeptIds
+			// [{deptId:'',note:''}]
+			,deptNotes:parent.appData.deptNotes
+			, deptTreeProps: {
+				label: "deptName"
+				, disabled: function (node, data) {
+					return appData.availableDepts.indexOf(node.deptId) === -1;
+				}
+			}
+			// 字典
+			// ,AssignmentStatus:getDict("AssignmentStatus")
+		};
+
+		// Vue实例
+		var app = new Vue({
+			el: '#app'
+			,data: appData
+			, watch: {
+				'filterDeptText': function (newVal, oldVal) {
+					this.$refs['deptTree'].filter(newVal);
+				}
+			}
+			,methods: {
+				//选中部门树
+				singleCheckChange: function (data, checked, node) {
+					var that = this;
+					if (checked) {
+						//单选
+						that.$nextTick(() => {
+							that.$refs['deptTree'].setCheckedKeys([data.deptId]);
+							that.selectedDeptId = data.deptId;
+							that.selectedDeptName = data.deptName;
+						});
+					}
+
+				}
+				,hasNote: function (deptId){
+					var hasNote = false;
+					for (var deptNote of that.deptNotes) {
+						if (deptNote.deptId == deptId) {
+							hasNote = true;
+							break;
+						}
+					}
+					return hasNote;
+				}
+				,showNote: function (deptId){
+					var note = "";
+					for (var deptNote of that.deptNotes) {
+						if (deptNote.deptId == deptId) {
+							note = deptNote.note;
+							break;
+						}
+					}
+					return note;
+				}
+				,filterDept: function (value, data) {
+					if (!value) return true;
+					return data.deptName.indexOf(value) !== -1;
+				}
+                ,reset: function() {
+                    this.$refs['deptTree'].setCheckedKeys([]);
+                }
+                ,submit: function() {
+					parent.deptPickCallback(this.selectedDeptId,this.selectedDeptName);
+					parent.closeDeptPick();
+                }
+			}
+			,created: function() {
+				var that = this;
+
+				// 先加载能加载的部门节点
+				axios.get("sjhj/assignmentShare/availableDepts", {loading: true})
+						.then(function (result) {
+							that.availableDepts = result.data || [];
+
+							// 要排除的节点
+							for (var excludeDeptId of that.excludeDeptIds) {
+								var excludeIndex = that.availableDepts.indexOf(excludeDeptId);
+								if (excludeIndex > -1) {
+									that.availableDepts.splice(excludeIndex, 1);
+								}
+							}
+
+							// 进行ajax请求
+							axios.get("system/dept/tree", {loading: true})
+									.then(function (result) {
+										// var root = [{deptId: "0", deptName: "所有部门", children: result.data || []}];
+										// root[0].children.push({deptId: "1", deptName: "未分配", pid: "0", parentId: "0", children: []});
+										that.deptTreeData = result.data || [];
+										that.defaultExpandDeptId.push(result.data[0].deptId);
+									});
+							var defaultDeptId = parent.defaultDept();
+							that.defaultCheckedDeptId.push(defaultDeptId);
+							that.defaultExpandDeptId.push(defaultDeptId);
+
+						});
+
+			}
+			,mounted: function() {
+				this.$nextTick(function() {
+					var that = this;
+					// 操作dom
+
+				});
+				// 监听窗口变化
+				window.onresize = function() {
+					app.winHeight = document.body.clientHeight;
+				}
+			}
+		});
+
+		// 刷新
+		function reload() {
+
+		}
+	</script>
+</body>
+</html>
