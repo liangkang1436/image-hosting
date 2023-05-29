@@ -1,0 +1,5 @@
+    - name: run kafka
+      shell: | 
+        cd /ansible/distData/dockerBasicAppTar 
+        docker load -i bitnami-kafka-arm-3.2.3.tar
+        docker run -d --name kafka --network host --restart=always -p 9093:9093 -p 9092:9092  -e ALLOW_PLAINTEXT_LISTENER=yes -e KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true -e KAFKA_CFG_LOG_CLEANER_BACKOFF_MS=15000 -e KAFKA_CFG_LOG_SEGMENT_BYTES=1073741824 -e KAFKA_CFG_LOG_RETENTION_CHECK_INTERVAL_MS=300000 -e KAFKA_CFG_LOG_RETENTION_HOURS=168 --env KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093  --env KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://{{ansible_ssh_host}}:9092   -v /data/kafka:/bitnami/kafka bitnami/kafka:3.2.3
